@@ -1,0 +1,24 @@
+# Build output
+/build/
+/out/
+/bin/
+/obj/
+
+# IDE files
+/.vs/
+/.vscode/
+/.clangd
+*.vcxproj*
+*.sln
+*.user
+*.suo
+
+# Local project guidance and large scene assets
+/AGENTS.md
+/USER_PROFILE_AND_LEARNING_CONTEXT.md
+/assets/
+
+# Runtime and temporary files
+*.log
+*.tmp
+imgui.ini
