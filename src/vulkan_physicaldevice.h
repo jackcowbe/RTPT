@@ -18,5 +18,6 @@ class VulkanPhysicalDevice
  private:
     void SelectPhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices );
     int ScoreDevice(VkPhysicalDevice device) const;
+    bool HasGraphicsQueueFamily(VkPhysicalDevice device) const;
     VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;  
 };

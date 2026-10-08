@@ -27,6 +27,32 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VkInstance instance)
     
 }
 
+
+bool VulkanPhysicalDevice::HasGraphicsQueueFamily(VkPhysicalDevice device) const
+{
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+    for (const VkQueueFamilyProperties& queueFamily : queueFamilies)
+    {
+        bool hasQueue = queueFamily.queueCount > 0;
+
+        bool supportsGraphics =
+            (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0;
+
+        if (hasQueue && supportsGraphics)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 int VulkanPhysicalDevice::ScoreDevice(VkPhysicalDevice device) const
 {
     VkPhysicalDeviceProperties properties{};
@@ -54,7 +80,11 @@ void VulkanPhysicalDevice::SelectPhysicalDevice( const std::vector<VkPhysicalDev
 
     for (VkPhysicalDevice device : physicalDevices)
     {
-        
+        if (!HasGraphicsQueueFamily(device))
+        {
+            continue; // Skip devices without graphics queue family
+        }
+   
         int score = ScoreDevice(device);
         if(bestDevice == VK_NULL_HANDLE || score > bestScore)
         {
@@ -66,6 +96,7 @@ void VulkanPhysicalDevice::SelectPhysicalDevice( const std::vector<VkPhysicalDev
     {
         throw std::runtime_error("Failed to find a suitable physical device");
     }
+    
     m_PhysicalDevice = bestDevice;
 }
 
