@@ -10,7 +10,8 @@ int main() {
     Window window(config);
     VulkanInstance instance;
     VulkanSurface surface(instance.GetHandle(), window.GetHandle());
-    VulkanPhysicalDevice physicalDevice(instance.GetHandle());
+    VulkanPhysicalDevice physicalDevice(instance.GetHandle(), surface.GetHandle());
+
 
     while (!window.ShouldClose())
     {
