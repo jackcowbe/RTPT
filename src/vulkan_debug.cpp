@@ -10,16 +10,9 @@ namespace
     constexpr const char* kValidationLayer =
         "VK_LAYER_KHRONOS_validation";
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-        [[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        [[maybe_unused]] void* pUserData)
+    VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback([[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, [[maybe_unused]] void* pUserData)
     {
-        std::cerr
-            << "Validation layer: "
-            << pCallbackData->pMessage
-            << std::endl;
+        std::cerr << "Validation layer: " << pCallbackData->pMessage << std::endl;
 
         return VK_FALSE;
     }
@@ -37,26 +30,18 @@ VulkanDebugMessenger::VulkanDebugMessenger(VkInstance instance)
 
     PFN_vkCreateDebugUtilsMessengerEXT createDebugMessenger =
         reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-            vkGetInstanceProcAddr(
-                m_Instance,
-                "vkCreateDebugUtilsMessengerEXT"));
+            vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
 
     if (createDebugMessenger == nullptr)
     {
-        throw std::runtime_error(
-            "Failed to load vkCreateDebugUtilsMessengerEXT");
+        throw std::runtime_error("Failed to load vkCreateDebugUtilsMessengerEXT");
     }
 
-    VkResult result = createDebugMessenger(
-        m_Instance,
-        &createInfo,
-        nullptr,
-        &m_Messenger);
+    VkResult result = createDebugMessenger(m_Instance, &createInfo, nullptr, &m_Messenger);
 
     if (result != VK_SUCCESS)
     {
-        throw std::runtime_error(
-            "Failed to create debug messenger");
+        throw std::runtime_error("Failed to create debug messenger");
     }
 }
 
@@ -69,16 +54,11 @@ VulkanDebugMessenger::~VulkanDebugMessenger()
 
     PFN_vkDestroyDebugUtilsMessengerEXT destroyDebugMessenger =
         reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
-            vkGetInstanceProcAddr(
-                m_Instance,
-                "vkDestroyDebugUtilsMessengerEXT"));
+            vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT"));
 
     if (destroyDebugMessenger != nullptr)
     {
-        destroyDebugMessenger(
-            m_Instance,
-            m_Messenger,
-            nullptr);
+        destroyDebugMessenger(m_Instance, m_Messenger, nullptr);
     }
 }
 
@@ -95,25 +75,20 @@ bool VulkanDebugMessenger::IsValidationLayerSupported()
 {
     uint32_t layerCount = 0;
 
-    VkResult result =
-        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+    VkResult result = vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
     if (result != VK_SUCCESS)
     {
-        throw std::runtime_error(
-            "Failed to enumerate instance layer count");
+        throw std::runtime_error("Failed to enumerate instance layer count");
     }
 
     std::vector<VkLayerProperties> availableLayers(layerCount);
 
-    result = vkEnumerateInstanceLayerProperties(
-        &layerCount,
-        availableLayers.data());
+    result = vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
     if (result != VK_SUCCESS)
     {
-        throw std::runtime_error(
-            "Failed to enumerate instance layer properties");
+        throw std::runtime_error("Failed to enumerate instance layer properties");
     }
 
     for (const VkLayerProperties& layer : availableLayers)

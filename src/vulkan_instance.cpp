@@ -9,11 +9,9 @@ VulkanInstance::VulkanInstance()
     const bool enableValidationLayers =
         VulkanDebugMessenger::IsEnabled();
 
-    if (enableValidationLayers &&
-        !VulkanDebugMessenger::IsValidationLayerSupported())
+    if (enableValidationLayers && !VulkanDebugMessenger::IsValidationLayerSupported())
     {
-        throw std::runtime_error(
-            "Validation layer not supported");
+        throw std::runtime_error("Validation layer not supported");
     }
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -43,13 +41,10 @@ VulkanInstance::VulkanInstance()
         
     if (requiredExtensions == nullptr)
     {
-        throw std::runtime_error(
-            "Failed to get GLFW required Vulkan extensions");
+        throw std::runtime_error("Failed to get GLFW required Vulkan extensions");
     }
 
-    std::vector<const char*> extensions(
-        requiredExtensions,
-        requiredExtensions + extensionCount);
+    std::vector<const char*> extensions(requiredExtensions, requiredExtensions + extensionCount);
 
     if (enableValidationLayers)
     {
@@ -60,8 +55,7 @@ VulkanInstance::VulkanInstance()
         static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
-    VkResult result =
-        vkCreateInstance(&createInfo, nullptr, &m_Instance);
+    VkResult result = vkCreateInstance(&createInfo, nullptr, &m_Instance);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create Vulkan instance");
