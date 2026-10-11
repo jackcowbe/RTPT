@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
+
 class VulkanInstance
 {
  public:
@@ -13,6 +14,5 @@ class VulkanInstance
     VulkanInstance& operator=(const VulkanInstance&) = delete;
  
  private:
-    VkInstance m_Instance = VK_NULL_HANDLE;   
-
+    VkInstance m_Instance = VK_NULL_HANDLE;
 };

@@ -11,6 +11,7 @@ find_package(glm CONFIG REQUIRED)
 add_executable(RTPT
     src/main.cpp
     src/window.cpp
+    src/vulkan_debug.cpp
     src/vulkan_instance.cpp
     src/vulkan_surface.cpp
     src/vulkan_physicaldevice.cpp
