@@ -22,7 +22,8 @@ class VulkanPhysicalDevice
     ~VulkanPhysicalDevice() = default;
 
     VkPhysicalDevice GetHandle() const;
-    
+
+    QueueFamilyIndices GetQueueFamilyIndices() const;    
 
     VulkanPhysicalDevice(const VulkanPhysicalDevice&) = delete;
     VulkanPhysicalDevice& operator=(const VulkanPhysicalDevice&) = delete;
@@ -31,6 +32,7 @@ class VulkanPhysicalDevice
     void SelectPhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices , VkSurfaceKHR surface);
     int ScoreDevice(VkPhysicalDevice device) const;
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) const;
-    VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;  
+    VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE; 
+    QueueFamilyIndices m_QueueFamilyIndices; 
 };
 

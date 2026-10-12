@@ -98,19 +98,22 @@ int VulkanPhysicalDevice::ScoreDevice(VkPhysicalDevice device) const
 void VulkanPhysicalDevice::SelectPhysicalDevice( const std::vector<VkPhysicalDevice>& physicalDevices, VkSurfaceKHR surface)
 {
     VkPhysicalDevice bestDevice = VK_NULL_HANDLE;
+    QueueFamilyIndices bestIndices;
     int bestScore = -1;
 
     for (VkPhysicalDevice device : physicalDevices)
     {
-        if (!FindQueueFamilies(device, surface).IsComplete())
+        QueueFamilyIndices indices = FindQueueFamilies(device, surface);
+        if (!indices.IsComplete())
         {
-            continue; // Skip devices without graphics queue family
+            continue; // Skip devices that don't have both graphics and present queue families
         }
    
         int score = ScoreDevice(device);
         if(bestDevice == VK_NULL_HANDLE || score > bestScore)
         {
             bestDevice = device;
+            bestIndices = indices;
             bestScore = score;
         }
     }
@@ -120,6 +123,12 @@ void VulkanPhysicalDevice::SelectPhysicalDevice( const std::vector<VkPhysicalDev
     }
     
     m_PhysicalDevice = bestDevice;
+    m_QueueFamilyIndices = bestIndices;
+}
+
+QueueFamilyIndices VulkanPhysicalDevice::GetQueueFamilyIndices() const
+{
+    return m_QueueFamilyIndices;
 }
 
 VkPhysicalDevice VulkanPhysicalDevice::GetHandle() const
