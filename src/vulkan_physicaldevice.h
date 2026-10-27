@@ -31,6 +31,7 @@ class VulkanPhysicalDevice
  private:
     void SelectPhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices , VkSurfaceKHR surface);
     int ScoreDevice(VkPhysicalDevice device) const;
+    bool CheckDeviceExtensionSupport(VkPhysicalDevice device) const;
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) const;
     VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE; 
     QueueFamilyIndices m_QueueFamilyIndices; 

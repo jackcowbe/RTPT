@@ -15,6 +15,7 @@ add_executable(RTPT
     src/vulkan_instance.cpp
     src/vulkan_surface.cpp
     src/vulkan_physicaldevice.cpp
+    src/vulkan_device.cpp
 )
 
 target_include_directories(RTPT PRIVATE

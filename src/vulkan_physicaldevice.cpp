@@ -1,5 +1,6 @@
 #include "vulkan_physicaldevice.h"
 #include <stdexcept>
+#include <cstring>
 
 
 VulkanPhysicalDevice::VulkanPhysicalDevice(VkInstance instance, VkSurfaceKHR surface)
@@ -108,7 +109,10 @@ void VulkanPhysicalDevice::SelectPhysicalDevice( const std::vector<VkPhysicalDev
         {
             continue; // Skip devices that don't have both graphics and present queue families
         }
-   
+        if (!CheckDeviceExtensionSupport(device))
+        {
+            continue;
+        } 
         int score = ScoreDevice(device);
         if(bestDevice == VK_NULL_HANDLE || score > bestScore)
         {
@@ -124,6 +128,50 @@ void VulkanPhysicalDevice::SelectPhysicalDevice( const std::vector<VkPhysicalDev
     
     m_PhysicalDevice = bestDevice;
     m_QueueFamilyIndices = bestIndices;
+}
+
+bool VulkanPhysicalDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device) const
+{
+    uint32_t extensionCount = 0;
+
+    VkResult result = vkEnumerateDeviceExtensionProperties(
+        device,
+        nullptr,
+        &extensionCount,
+        nullptr
+    );
+
+    if (result != VK_SUCCESS)
+    {
+    throw std::runtime_error(
+        "Failed to enumerate device extension count");
+    }
+
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+
+    result = vkEnumerateDeviceExtensionProperties(
+    device,
+    nullptr,
+    &extensionCount,
+    availableExtensions.data());
+
+    if (result != VK_SUCCESS)
+    {
+    throw std::runtime_error(
+        "Failed to enumerate device extension properties");
+    }
+
+    for (const VkExtensionProperties& extension : availableExtensions)
+    {
+        if (std::strcmp(
+                extension.extensionName,
+                VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 QueueFamilyIndices VulkanPhysicalDevice::GetQueueFamilyIndices() const
