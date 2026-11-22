@@ -8,14 +8,12 @@ find_package(Vulkan REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
+add_subdirectory(external/vk-bootstrap)
+
 add_executable(RTPT
     src/main.cpp
+    src/vulkan_context.cpp
     src/window.cpp
-    src/vulkan_debug.cpp
-    src/vulkan_instance.cpp
-    src/vulkan_surface.cpp
-    src/vulkan_physicaldevice.cpp
-    src/vulkan_device.cpp
 )
 
 target_include_directories(RTPT PRIVATE
@@ -27,6 +25,7 @@ target_link_libraries(RTPT PRIVATE
     Vulkan::Vulkan
     glfw
     glm::glm
+    vk-bootstrap::vk-bootstrap
 )
 
 if (MSVC)

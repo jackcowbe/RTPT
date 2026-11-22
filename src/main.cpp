@@ -1,18 +1,11 @@
 #include "window.h"
-#include "vulkan_debug.h"
-#include "vulkan_instance.h"
-#include "vulkan_surface.h"
-#include "vulkan_physicaldevice.h"
-#include <iostream>
+#include "vulkan_context.h"
 
 int main() {
   
     WindowConfig config = {800, 600, "RTPT"};
     Window window(config);
-    VulkanInstance instance;
-    VulkanDebugMessenger debugMessenger(instance.GetHandle());
-    VulkanSurface surface(instance.GetHandle(), window.GetHandle());
-    VulkanPhysicalDevice physicalDevice(instance.GetHandle(), surface.GetHandle());
+    VulkanContext vulkanContext(window.GetHandle());
 
 
     while (!window.ShouldClose())
