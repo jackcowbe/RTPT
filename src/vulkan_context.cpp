@@ -4,147 +4,127 @@
 #include <stdexcept>
 #include <string>
 
-VulkanContext::VulkanContext(GLFWwindow* window)
-{
-    vkb::InstanceBuilder builder;
+VulkanContext::VulkanContext(GLFWwindow *window) {
+  vkb::InstanceBuilder builder;
 
-    auto instanceResult = builder
-        .set_app_name("RTPT")
-        .request_validation_layers()
-        .use_default_debug_messenger()
-        .build();
+  auto instanceResult = builder.set_app_name("RTPT")
+                            .request_validation_layers()
+                            .use_default_debug_messenger()
+                            .require_api_version(1, 3, 0)
+                            .build();
 
-    if (!instanceResult)
-    {
-        throw std::runtime_error(
-            "Failed to create Vulkan instance: " +
-            instanceResult.error().message()
-        );
-    }
+  if (!instanceResult) {
+    throw std::runtime_error("Failed to create Vulkan instance: " +
+                             instanceResult.error().message());
+  }
 
-    vkb::Instance instance = instanceResult.value();
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
+  vkb::Instance instance = instanceResult.value();
+  VkSurfaceKHR surface = VK_NULL_HANDLE;
 
-    VkResult surfaceResult = glfwCreateWindowSurface(
-        instance,
-        window,
-        nullptr,
-        &surface
-    );
+  VkResult surfaceResult =
+      glfwCreateWindowSurface(instance, window, nullptr, &surface);
 
-    if (surfaceResult != VK_SUCCESS)
-    {
-        vkb::destroy_instance(instance);
+  if (surfaceResult != VK_SUCCESS) {
+    vkb::destroy_instance(instance);
 
-        throw std::runtime_error(
-            "Failed to create Vulkan surface: " +
-            std::to_string(surfaceResult)
-        );
-    }
+    throw std::runtime_error("Failed to create Vulkan surface: " +
+                             std::to_string(surfaceResult));
+  }
 
-    vkb::PhysicalDeviceSelector selector{instance};
+  VkPhysicalDeviceVulkan13Features features13{};
+  features13.synchronization2 = VK_TRUE;
+  features13.dynamicRendering = VK_TRUE;
 
-    auto physicalDeviceResult = selector
-        .set_surface(surface)
-        .select();
+  vkb::PhysicalDeviceSelector selector{instance};
 
-    if (!physicalDeviceResult)
-    {
-        vkb::destroy_surface(instance, surface);
-        vkb::destroy_instance(instance);
+  auto physicalDeviceResult = selector.set_surface(surface)
+                                  .set_required_features_13(features13)
+                                  .select();
 
-        throw std::runtime_error(
-            "Failed to select Vulkan physical device: " +
-            physicalDeviceResult.error().message()
-        );
-    }
+  if (!physicalDeviceResult) {
+    vkb::destroy_surface(instance, surface);
+    vkb::destroy_instance(instance);
 
-    vkb::PhysicalDevice physicalDevice = physicalDeviceResult.value();
-    vkb::DeviceBuilder deviceBuilder{physicalDevice};
+    throw std::runtime_error("Failed to select Vulkan physical device: " +
+                             physicalDeviceResult.error().message());
+  }
 
-    auto deviceResult = deviceBuilder.build();
+  vkb::PhysicalDevice physicalDevice = physicalDeviceResult.value();
+  vkb::DeviceBuilder deviceBuilder{physicalDevice};
 
-    if (!deviceResult)
-    {
-        vkb::destroy_surface(instance, surface);
-        vkb::destroy_instance(instance);
+  auto deviceResult = deviceBuilder.build();
 
-        throw std::runtime_error(
-            "Failed to create Vulkan logical device: " +
-            deviceResult.error().message()
-        );
-    }
+  if (!deviceResult) {
+    vkb::destroy_surface(instance, surface);
+    vkb::destroy_instance(instance);
 
-    vkb::Device device = deviceResult.value();
+    throw std::runtime_error("Failed to create Vulkan logical device: " +
+                             deviceResult.error().message());
+  }
 
-    auto graphicsQueueResult = device.get_queue(vkb::QueueType::graphics);
-    auto presentQueueResult = device.get_queue(vkb::QueueType::present);
-    auto graphicsQueueFamilyResult = device.get_queue_index(vkb::QueueType::graphics);
-    auto presentQueueFamilyResult = device.get_queue_index(vkb::QueueType::present);
+  vkb::Device device = deviceResult.value();
 
-    if (!graphicsQueueResult ||
-        !presentQueueResult ||
-        !graphicsQueueFamilyResult ||
-        !presentQueueFamilyResult)
-    {
-        vkb::destroy_device(device);
-        vkb::destroy_surface(instance, surface);
-        vkb::destroy_instance(instance);
+  auto graphicsQueueResult = device.get_queue(vkb::QueueType::graphics);
+  auto presentQueueResult = device.get_queue(vkb::QueueType::present);
+  auto graphicsQueueFamilyResult =
+      device.get_queue_index(vkb::QueueType::graphics);
+  auto presentQueueFamilyResult =
+      device.get_queue_index(vkb::QueueType::present);
 
-        throw std::runtime_error(
-            "Failed to get Vulkan graphics or present queue"
-        );
-    }
+  if (!graphicsQueueResult || !presentQueueResult ||
+      !graphicsQueueFamilyResult || !presentQueueFamilyResult) {
+    vkb::destroy_device(device);
+    vkb::destroy_surface(instance, surface);
+    vkb::destroy_instance(instance);
 
-    vkb::SwapchainBuilder swapchainBuilder{device};
-    auto swapchainResult = swapchainBuilder.build();
+    throw std::runtime_error("Failed to get Vulkan graphics or present queue");
+  }
 
-    if (!swapchainResult)
-    {
-        vkb::destroy_device(device);
-        vkb::destroy_surface(instance, surface);
-        vkb::destroy_instance(instance);
+  vkb::SwapchainBuilder swapchainBuilder{device};
+  auto swapchainResult =
+      swapchainBuilder.add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+          .build();
 
-        throw std::runtime_error(
-            "Failed to create Vulkan swapchain: " +
-            swapchainResult.error().message()
-        );
-    }
+  if (!swapchainResult) {
+    vkb::destroy_device(device);
+    vkb::destroy_surface(instance, surface);
+    vkb::destroy_instance(instance);
 
-    vkb::Swapchain swapchain = swapchainResult.value();
-    auto imagesAndViewsResult = swapchain.get_images_and_image_views();
+    throw std::runtime_error("Failed to create Vulkan swapchain: " +
+                             swapchainResult.error().message());
+  }
 
-    if (!imagesAndViewsResult)
-    {
-        vkb::destroy_swapchain(swapchain);
-        vkb::destroy_device(device);
-        vkb::destroy_surface(instance, surface);
-        vkb::destroy_instance(instance);
+  vkb::Swapchain swapchain = swapchainResult.value();
+  auto imagesAndViewsResult = swapchain.get_images_and_image_views();
 
-        throw std::runtime_error(
-            "Failed to get Vulkan swapchain images and image views: " +
-            imagesAndViewsResult.error().message()
-        );
-    }
+  if (!imagesAndViewsResult) {
+    vkb::destroy_swapchain(swapchain);
+    vkb::destroy_device(device);
+    vkb::destroy_surface(instance, surface);
+    vkb::destroy_instance(instance);
 
-    m_Instance = instance;
-    m_Surface = surface;
-    m_PhysicalDevice = physicalDevice;
-    m_Device = device;
-    m_GraphicsQueue = graphicsQueueResult.value();
-    m_PresentQueue = presentQueueResult.value();
-    m_GraphicsQueueFamily = graphicsQueueFamilyResult.value();
-    m_PresentQueueFamily = presentQueueFamilyResult.value();
-    m_Swapchain = swapchain;
-    m_SwapchainImages = imagesAndViewsResult.value().first;
-    m_SwapchainImageViews = imagesAndViewsResult.value().second;
+    throw std::runtime_error(
+        "Failed to get Vulkan swapchain images and image views: " +
+        imagesAndViewsResult.error().message());
+  }
+
+  m_Instance = instance;
+  m_Surface = surface;
+  m_PhysicalDevice = physicalDevice;
+  m_Device = device;
+  m_GraphicsQueue = graphicsQueueResult.value();
+  m_PresentQueue = presentQueueResult.value();
+  m_GraphicsQueueFamily = graphicsQueueFamilyResult.value();
+  m_PresentQueueFamily = presentQueueFamilyResult.value();
+  m_Swapchain = swapchain;
+  m_SwapchainImages = imagesAndViewsResult.value().first;
+  m_SwapchainImageViews = imagesAndViewsResult.value().second;
 }
 
-VulkanContext::~VulkanContext()
-{
-    m_Swapchain.destroy_image_views(m_SwapchainImageViews);
-    vkb::destroy_swapchain(m_Swapchain);
-    vkb::destroy_device(m_Device);
-    vkb::destroy_surface(m_Instance, m_Surface);
-    vkb::destroy_instance(m_Instance);
+VulkanContext::~VulkanContext() {
+  m_Swapchain.destroy_image_views(m_SwapchainImageViews);
+  vkb::destroy_swapchain(m_Swapchain);
+  vkb::destroy_device(m_Device);
+  vkb::destroy_surface(m_Instance, m_Surface);
+  vkb::destroy_instance(m_Instance);
 }

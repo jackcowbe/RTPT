@@ -12,6 +12,7 @@ add_subdirectory(external/vk-bootstrap)
 
 add_executable(RTPT
     src/main.cpp
+    src/renderer.cpp
     src/vulkan_context.cpp
     src/window.cpp
 )
